@@ -1,7 +1,47 @@
 #include<iostream>
 #include<fstream>
+#include <cstring>
 #include <string>
 using namespace std;
+void get_records(string owner){
+    /*This function gets the records of a owner */
+    //Checking if the OS is linux or Win
+    #if __linux__
+        system(("ls -l Records | grep  -i \""+owner+"\" >test.txt").c_str());//shell command to get all files with owner name
+    #elif _WIN32
+        system(("dir Records | findstr /ilc:\""+owner+"\" >test.txt").c_str());//cmd command to get all files with owner name
+    #endif
+    
+    ifstream file_name;
+    file_name.open("test.txt");
+    string content("");
+    string line(""); 
+    while(getline(file_name,line)){
+        content+=line.substr(line.find(owner)+owner.length()+1,line.find(".txt")-line.find(owner)-owner.length()-1)+"\n";
+    }
+    file_name.close();
+    ofstream file_2;
+    file_2.open("Owner_Record\\"+owner+".txt");
+    file_2<<content;
+    file_2.close();
+}
+void Refresh(){
+    /*Refresh all logs*/
+    ifstream file_name;
+    file_name.open("users.txt");
+    string content("");
+    string line(""); 
+    while(getline(file_name,line)){
+        get_records(line);
+    }
+    //removing the temp test file
+    #if __linux__
+        system("rm test.txt");
+    #elif _WIN32
+        system("del test.txt");
+    #endif
+    
+}
 class record{
     private:
     string owner;
@@ -49,7 +89,7 @@ class record{
         ifstream file_name;
         file_name.open("Records\\"+owner+"_"+title+".txt");
         string content;
-        string line("");
+        string line(""); 
         while(getline(file_name,line)){
             cout<<line<<endl;
         }
@@ -73,6 +113,13 @@ class record{
             file_name<<line<<endl;
         }
         file_name.close();
+    }
+    void rem(){
+        string s="Records\\"+owner+"_"+title+".txt";
+        int n=s.length();
+        char cmd[n+1];
+        strcpy(cmd, s.c_str());
+        remove(cmd);
     }
 };
 class owner{
@@ -135,6 +182,7 @@ int main(){
     cout<<"|               |"<<endl;
     cout<<"|    WELCOME    |"<<endl;
     cout<<"|_______________|"<<endl;
+    Refresh();
     while(runner){
         cout<<" __________________"<<endl; 
         cout<<"|                  |"<<endl;
@@ -172,7 +220,8 @@ int main(){
                     cout<<"|3.Write a new Memo             |"<<endl;
                     cout<<"|4.Update a old memo            |"<<endl;
                     cout<<"|5.Clear a memo                 |"<<endl;
-                    cout<<"|6.Return to main menu          |"<<endl;
+                    cout<<"|6.Delete a memo                |"<<endl;
+                    cout<<"|7.Return to main menu          |"<<endl;
                     cout<<"|_______________________________|"<<endl; 
                     cin>>menu2;
                     switch(menu2){
@@ -230,6 +279,19 @@ int main(){
                             break;
                         }
                         case 6:{
+                            cout<<" _______________"<<endl;
+                            cout<<"|               |"<<endl;  
+                            cout<<"|  DELETE MEMO  |"<<endl;  
+                            cout<<"|_______________|"<<endl;
+                            cout<<"Which Memo DO You Want To Delete: ";
+                            string title;
+                            cin>>title;
+                            record r1(name,title);
+                            r1.rem();
+                            Refresh();
+                            break;
+                        }
+                        case 7:{
                             run=0;
                             break;
                         }
